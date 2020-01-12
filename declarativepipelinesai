@@ -1,0 +1,100 @@
+pipeline
+{
+    agent any 
+            stages{
+	                stage('continuous Download')
+			            {
+				                    steps
+						                    {
+								                         script
+											                      {
+													                               try
+																                                {
+																				                             git 'https://github.com/saihariteja/jenkinpipeline.git'
+																							                                  
+																											                           }
+																														                            catch(Exception e1)
+																																	                             {
+																																				                                  mail bcc: '', body: 'Jenkins is not able to download from the remote git repo', cc: '', from: '', replyTo: '', subject: 'Unable to Download from github', to: 'bhagyanagarteja@gmail.com'
+																																								                               exit(1);
+																																											                                    
+																																															                             }
+																																																		                              
+																																																					                           }
+																																																								                       
+																																																										                       }
+																																																												                      
+																																																														                  }
+																																																																              stage('Continuous Build')
+																																																																	                  {
+																																																																			                  steps{
+																																																																					                      script{
+																																																																							                              try{
+																																																																										                                  sh label:"", script:'mvn package'
+																																																																														                          }
+																																																																																	                          catch(Exception e2)
+																																																																																				                          {
+																																																																																							                               mail bcc: '', body: 'Jenkins is not able to build the code', cc: '', from: '', replyTo: '', subject: 'Unable to Build the code', to: 'bhagyanagarteja@gmail.com'
+																																																																																										                                   exit(1)
+																																																																																														                           }
+																																																																																																	                       }
+																																																																																																			                       }
+																																																																																																					                   }
+																																																																																																							               stage('Continuous Deployment')
+																																																																																																								                   {
+																																																																																																										                   steps
+																																																																																																												                   {
+																																																																																																														                       script
+																																																																																																																                           {
+																																																																																																																			                           try
+																																																																																																																						                           {
+																																																																																																																									                                sh label:"",script:'scp /home/ubuntu/.jenkins/workspace/DeclarativePipeline/webapp/target/webapp.war ubuntu@172.31.34.212:/var/lib/tomcat8/webapps/testers.war'
+																																																																																																																													                        }`
+																																																																																																																																                        catch(Exception e3 )
+																																																																																																																																			                        {
+																																																																																																																																						                             mail bcc: '', body: 'Failed to deploy in QA', cc: '', from: '', replyTo: '', subject: 'Unable to Deploy the code', to: 'bhagyanagarteja@gmail.com'
+																																																																																																																																									                                 exit(1)
+																																																																																																																																													                         }
+																																																																																																																																																                     }
+																																																																																																																																																		                     }
+																																																																																																																																																				                 }
+																																																																																																																																																						             stage('Continuous Testing')
+																																																																																																																																																							                 {
+																																																																																																																																																									                 steps
+																																																																																																																																																											                 {
+																																																																																																																																																													                     script
+																																																																																																																																																															                         {
+																																																																																																																																																																		                         try
+																																																																																																																																																																					                         {
+																																																																																																																																																																								                             git 'https://github.com/selenium-saikrishna/FunctionalTesting.git'
+																																																																																																																																																																											                                 
+																																																																																																																																																																															                             sh label: '', script: 'java -jar /home/ubuntu/.jenkins/workspace/DeclarativePipeline/testing.jar'
+																																																																																																																																																																																		                             }
+																																																																																																																																																																																					                             catch(Exception e4)
+																																																																																																																																																																																								                             {
+																																																																																																																																																																																											                             mail bcc: '', body: 'Functional Testing has failed', cc: '', from: '', replyTo: '', subject: 'TestingFailed', to: 'testers@gmail.com'
+																																																																																																																																																																																														                             exit(1);
+																																																																																																																																																																																																	                                 
+																																																																																																																																																																																																					                         }
+																																																																																																																																																																																																								                     }
+																																																																																																																																																																																																										                     }
+																																																																																																																																																																																																												                 }
+																																																																																																																																																																																																														             stage('Continuos Delivery')
+																																																																																																																																																																																																															                 {
+																																																																																																																																																																																																																	                 steps
+																																																																																																																																																																																																																			                 {
+																																																																																																																																																																																																																					                     script
+																																																																																																																																																																																																																							                         {
+																																																																																																																																																																																																																										                         try
+																																																																																																																																																																																																																													                         {
+																																																																																																																																																																																																																																                             sh label: '', script: 'scp /home/ubuntu/.jenkins/workspace/DeclarativePipeline/webapp/target/webapp.war ubuntu@172.31.35.145:/var/lib/tomcat8/webapps/prodapp.war'
+																																																																																																																																																																																																																																			                             }
+																																																																																																																																																																																																																																						                             catch(Exception e5)
+																																																																																																																																																																																																																																									                             {
+																																																																																																																																																																																																																																												                                 exit(1)
+																																																																																																																																																																																																																																																                         }
+																																																																																																																																																																																																																																																			                     }
+																																																																																																																																																																																																																																																					                     }
+																																																																																																																																																																																																																																																							                 }
+																																																																																																																																																																																																																																																									         }
+																																																																																																																																																																																																																																																										 }
